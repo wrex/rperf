@@ -7,6 +7,7 @@ require 'rperf'
 class App
   include Methadone::Main
   include Methadone::CLILogging
+  include Methadone::SH
 
   main do # Add args you want: |like,so|
     # your program code here
@@ -18,7 +19,8 @@ class App
 
   # Declare command-line interface here
 
-  # description "one line description of your app"
+  description "IO performance testing utility"
+
   #
   # Accept flags via:
   # on("--flag VAL","Some flag")
@@ -30,7 +32,22 @@ class App
   # Or, just call OptionParser methods on opts
   #
   # Require an argument
-  # arg :some_arg 
+
+  arg :FILE_OR_DEVICE, :required, :many, 
+    <<EOF
+File or device to read and write, along with an optional size
+	specification.  By default, rperf will use the entire size of the
+	device. Multiple files or devices may be specified.
+
+	Examples: 
+
+	1) 'rperf /dev/sdb' will perform IO to the entire size of the /dev/sdb
+	    device, 
+
+	2) 'rperf myfile$5G' will perform IO to the first 5 GiB of the file
+	   'myfile' regardless of it's current size." 
+EOF
+
   #
   # # Make an argument optional
   # arg :optional_arg, :optional

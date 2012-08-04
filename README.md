@@ -1,6 +1,6 @@
 # Rperf
 
-TODO: Write a gem description
+IO performance testing tool
 
 ## Installation
 

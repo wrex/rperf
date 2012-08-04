@@ -2,4 +2,5 @@
 results.html
 pkg
 html
+*.swp
 *.lock
