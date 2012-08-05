@@ -9,29 +9,15 @@ class App
   include Methadone::CLILogging
   include Methadone::SH
 
-  main do # Add args you want: |like,so|
+  main do |files| # Add args you want: |like,so|
     # your program code here
     # You can access CLI options via
     # the options Hash
   end
 
-  # supplemental methods here
-
-  # Declare command-line interface here
-
   description "IO performance testing utility"
 
-  #
-  # Accept flags via:
-  # on("--flag VAL","Some flag")
-  # options[flag] will contain VAL
-  #
-  # Specify switches via:
-  # on("--[no-]switch","Some switch")
-  #
-  # Or, just call OptionParser methods on opts
-  #
-  # Require an argument
+  on "--workload WORKLOADS", "-w", "Specifies the workload or workloads to use for the test"
 
   arg :FILE_OR_DEVICE, :required, :many, 
     <<EOF
@@ -41,16 +27,12 @@ File or device to read and write, along with an optional size
 
 	Examples: 
 
-	1) 'rperf /dev/sdb' will perform IO to the entire size of the /dev/sdb
-	    device, 
+	1) 'rperf /dev/sdb' will perform IO to the entire range of block
+           offsets within the /dev/sdb device, 
 
 	2) 'rperf myfile$5G' will perform IO to the first 5 GiB of the file
 	   'myfile' regardless of it's current size." 
 EOF
-
-  #
-  # # Make an argument optional
-  # arg :optional_arg, :optional
 
   version Rperf::VERSION
 
@@ -58,3 +40,13 @@ EOF
 
   go!
 end
+
+# all workloads applied to all devices?
+# range within the file?
+#
+# For each workload, must specify
+# - target device
+# - range within the target
+# - IO streams: random/sequential, block size, #threads, for writes: dedupe rate, compressibility
+#
+# rspec "/dev/sdb{0-50GiB} = r-8KiB-10, w-128KiB-1@50-2" "/dev/sdc = w-2048-2"

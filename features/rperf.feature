@@ -12,8 +12,16 @@ Feature: basic command line invocation
     And the banner should document that this app takes options
     And the following options should be documented:
       |--version|
+      |--workload|
     And the banner should document that this app's arguments are:
       |FILE_OR_DEVICE|which is required|
+
+
+  Scenario: Default load generation
+    Given A 1_000_000 byte file named "myfile" in the current directory
+    And I have not created a configuration file
+    When I run `rperf myfile`
+    Then I should see continuous IO to all of myfile
     
 
 # vim: ai sw=2 tm=75
