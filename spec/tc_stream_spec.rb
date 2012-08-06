@@ -8,6 +8,10 @@ describe Rperf::Stream do
     str2.blocksize.should == 8192
   end
 
+  it "should only let me use a multiple of the word size as blocksize" do
+    expect { Rperf::Stream.new(7) }.to raise_error ArgumentError
+  end
+
   describe "#block" do
     it "should return exactly blocksize bytes" do
       stream.block.length.should == stream.blocksize
