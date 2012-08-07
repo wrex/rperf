@@ -13,11 +13,15 @@ module Rperf
 
     def next_block
       block = @stream.block
-      if block.length + @returned_bytes <= @device_size
+      remaining = @device_size - @returned_bytes
+      if remaining == 0
+        return nil
+      elsif remaining > block.length
         @returned_bytes += block.length
         return block
       else
-        return nil
+        @returned_bytes += remaining
+        return block.slice(0, remaining)
       end
     end
 

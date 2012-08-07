@@ -8,7 +8,7 @@ describe Rperf::Workload do
     expect { Rperf::Workload.new(1, 1024, 4096) }.to raise_error ArgumentError
   end
 
-  it "should accept 1-1024-W to a 4096 byte device" do
+  it "should accept 1 thread, 1024 blocksize, 4096 byte dev, and :seq_write" do
     expect { Rperf::Workload.new(1, 1024, 4096, :seq_write) }.not_to raise_error
   end
 
@@ -16,7 +16,7 @@ describe Rperf::Workload do
     expect { Rperf::Workload.new(1, 1024, 4096, :foobar) }.to raise_error ArgumentError
   end
 
-  describe "#next" do
+  describe "#next_block" do
     it "should return device size bytes for sequential writes" do
       wl = Rperf::Workload.new(1, 1024, 4096, :seq_write, :loop => false)
       bytes = 0
@@ -24,6 +24,15 @@ describe Rperf::Workload do
         bytes += block.length
       end
       bytes.should == 4096
+    end
+
+    it "should return partial last block" do
+      wl = Rperf::Workload.new(1, 1024, 5000, :seq_write, :loop => false)
+      wl.next_block.length.should == 1024
+      wl.next_block.length.should == 1024
+      wl.next_block.length.should == 1024
+      wl.next_block.length.should == 1024
+      wl.next_block.length.should == 5000 - 4096
     end
   end
 
