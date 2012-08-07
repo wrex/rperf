@@ -10,6 +10,7 @@ describe Rperf do
       Rperf::normalize_units("8KiB").should == 8192
       Rperf::normalize_units("8\tKiB").should == 8192
       Rperf::normalize_units("8 \t KiB").should == 8192
+      Rperf::normalize_units("8KiB    ").should == 8192
     end
 
     it "should leave numbers without units alone ('1234' -> 1234)" do

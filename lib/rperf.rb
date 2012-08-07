@@ -7,28 +7,28 @@ module Rperf
 
     case str
 
-    when /^\s*(\d+)\s*KiB$/i
+    when /^\s*(\d+)\s*KiB\s*$/i
       return $1.to_i * 1024
 
-    when /^\s*(\d+)\s*KB$/i
+    when /^\s*(\d+)\s*KB\s*$/i
       return $1.to_i * 1000
 
-    when /^\s*(\d+)\s*MB$/i
+    when /^\s*(\d+)\s*MB\s*$/i
       return $1.to_i * 1_000_000
 
-    when /^\s*(\d+)\s*GB$/i
+    when /^\s*(\d+)\s*GB\s*$/i
       return $1.to_i * 1_000_000_000
 
-    when /^\s*(\d+)\s*TB$/i
+    when /^\s*(\d+)\s*TB\s*$/i
       return $1.to_i * 1_000_000_000_000
 
-    when /^\s*(\d+)\s*MiB$/i
+    when /^\s*(\d+)\s*MiB\s*$/i
       return $1.to_i * 1024 * 1024
 
-    when /^\s*(\d+)\s*GiB$/i
+    when /^\s*(\d+)\s*GiB\s*$/i
       return $1.to_i * 1024 * 1024 * 1024
 
-    when /^\s*(\d+)\s*TiB$/i
+    when /^\s*(\d+)\s*TiB\s*$/i
       return $1.to_i * 1024 * 1024 * 1024 * 1024
 
     when /^\s*(\d+)\s*$/
