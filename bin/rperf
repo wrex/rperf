@@ -15,38 +15,99 @@ class App
     # the options Hash
   end
 
-  description "IO performance testing utility"
+  description "rperf -- ruby IO performance testing utility"
 
-  on "--workload WORKLOADS", "-w", "Specifies the workload or workloads to use for the test"
-
-  arg :FILE_OR_DEVICE, :required, :many, 
-    <<EOF
-File or device to read and write, along with an optional size
-	specification.  By default, rperf will use the entire size of the
-	device. Multiple files or devices may be specified.
-
-	Examples: 
-
-	1) 'rperf /dev/sdb' will perform IO to the entire range of block
-           offsets within the /dev/sdb device, 
-
-	2) 'rperf myfile$5G' will perform IO to the first 5 GiB of the file
-	   'myfile' regardless of it's current size." 
-EOF
+  on("--help", "Display help") do 
+    puts opts.to_s
+    exit 0 
+  end
 
   version Rperf::VERSION
+
+  on("--[no]-loop", "Loop sequential workloads", "(Default: loop)")
+
+  arg :WORKLOAD, :many, <<EOF
+Workload specfications for the I/O to perform. For example, the
+        workload specification "myfile = 4-8KiB-b80" will create 4
+        threads doing IO to "myfile" in 8 KiB blocks at random
+        offsets, doing both read and write IO operations, with 80% of
+        the operations being reads.
+
+        Each specification takes the following form:
+
+        FILE_OR_DEVICE ['=' IO_STREAM]
+
+        Each FILE_OR_DEVICE is specified as a pathname, optionally
+        followed by a byte range in curly braces:  
+
+        FILE_OR_DEVICE = PATHNAME ['{' START_OFFSET '-' END_OFFSET '}']
+
+        For example, "/dev/sdb{0-50GiB}" will perform I/O to the first
+        50 GiB within /dev/sdb (without the byte range specification,
+        the IO would go to the entire range of the device}.
+
+        Each IO_STREAM specifies: the number of threads, the block
+        size for each operation, and the type of I/O (reads, writes,
+        or both). For streams containing writes, the user can
+        optionally specify the dedupe percentage and the
+        compressibility of the unique blocks. 
+        
+        For streams doing "both" reads and writes, the user can
+        optionally specify the percentage of reads (default is 50%).
+
+        Each IO_STREAM takes the following form:
+
+        IO_STREAM = NUM_THREADS '-' BLOCK_SIZE '-' RW_TYPE
+
+        NUM_THREADS is a decimal number specifying the number of threads.
+
+        BLOCK_SIZE is the number of bytes in a block. For convenience,
+        the suffixes "KB" (1,000 bytes), "KiB" (1,024 bytes), "MB"
+        (1,000,000 bytes), and MiB (1,024 * 1,024 bytes) may be used.
+
+        RW_TYPE takes the following form:
+
+        RW_TYPE = (r|w|b|R|W|B)[READ_P] ['@' DEDUPE_P '-' COMP]
+        
+        READ_P defaults to 50 and specifies the percentage of read I/O
+        operations. It is only meaningful for "b" or "B"
+
+        DEDUPE_P and COMP only have meaning for "w" (write) or "b"
+        (both) stream types (they are ignored with a stream type of
+        "r").
+
+        DEDUPE_P specifies the percentage of blocks that are
+        duplicated. The default is zero (each block contains unique
+        data).
+
+        COMP indicates the compressibility of each block. The default
+        is 1 which indicates no compressibility. 2 indicates 50%
+        compressible, 4 is approximately ....
+
+        Examples:
+
+        # Fill 'myfile' with random data from 1 thread
+        rperf --no-loop "myfile = 1-64KiB-W"
+
+        # Continuously fill /dev/sdb with 50% dedupable, 2x
+        # compressible data from 4 threads
+        rperf "/dev/sdb = 4-8KiB-W@50-2"
+
+        # Peform random I/O to the first 5 GiB of /dev/sdb, with 8 KiB
+        # blocks, 80% read I/O, and writing compressible data
+        rperf "/dev/sdb{0-5GiB} = 8-8KiB-b80@50-2"
+
+        # Continuously perform random reads to /dev/sdb and random
+        # writes to /dev/sdc
+        rperf "/dev/sdb = 4-8KiB-r" "/dev/sdc = 4-64KiB-w"
+
+EOF
 
   use_log_level_option
 
   go!
 end
 
-# all workloads applied to all devices?
-# range within the file?
+# TODO: delays? Sub-operation delays e.g. dperf?
 #
-# For each workload, must specify
-# - target device
-# - range within the target
-# - IO streams: random/sequential, block size, #threads, for writes: dedupe rate, compressibility
-#
-# rspec "/dev/sdb{0-50GiB} = r-8KiB-10, w-128KiB-1@50-2" "/dev/sdc = w-2048-2"
+# How in the heck can I test the random/looping workloads?
