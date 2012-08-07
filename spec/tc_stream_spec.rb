@@ -1,4 +1,5 @@
 require 'rperf'
+require 'zlib'
 
 describe Rperf::Stream do
   let(:stream) { Rperf::Stream.new(16) }
@@ -44,12 +45,50 @@ describe Rperf::Stream do
       stream.dedupe = 75
       dupes = prevblock = 0
       100.times do
-	newblock = stream.block
-	dupes += 1 if newblock == prevblock
-	prevblock = newblock
+        newblock = stream.block
+        dupes += 1 if newblock == prevblock
+        prevblock = newblock
       end
       dupes.should be >= (stream.dedupe * 0.9).to_i
       dupes.should be <= (stream.dedupe * 1.1).to_i
     end
+  end
+
+  describe "#compression" do
+    it "should have a default compression factor of 0" do
+      stream.compression.should == 0
+    end
+
+    it "should by default make each word in a block unique" do
+      wordsize = 0.size
+      fullblock = Rperf::Stream.new.block
+
+      # split block into an array of words
+      # e.g. on 32-bit, "01234567" -> ["0123", "4567"]
+      words = fullblock.scan(/.{#{wordsize}}/)
+
+      while word = words.shift do
+        words.should_not include(word)
+      end
+    end
+
+    it "should create uncompressible blocks by default" do
+      block = Rperf::Stream.new.block
+      compressed = Zlib::deflate(block)
+      
+      # note that compressing random data may increase size!
+      compressed.length.should be >= block.length
+    end
+
+    it "should create ~2x compressible blocks with compression=50" do
+      str2 = Rperf::Stream.new 
+      str2.compression = 50
+      block = str2.block
+      compressed = Zlib::deflate(block)
+
+      compressed.length.should be >= str2.blocksize / 2 * 0.9
+      compressed.length.should be <= str2.blocksize / 2 * 1.1
+    end
+
   end
 end
