@@ -3,9 +3,9 @@ require "rperf/stream"
 require "rperf/workload"
 
 module Rperf
-  def Rperf::normalize_units(str)
+  def Rperf::normalize_units(val)
 
-    case str
+    case val
 
     when /^\s*(\d+)\s*KiB\s*$/i
       return $1.to_i * 1024
@@ -35,7 +35,7 @@ module Rperf
       return $1.to_i
 
     else
-      return 0
+      return val
 
     end
   end

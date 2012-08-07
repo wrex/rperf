@@ -14,4 +14,17 @@ describe Rperf::Workload do
     expect { Rperf::Workload.new(:foobar, "/tmp/foo") }.to raise_error ArgumentError
   end
 
+  describe "#next" do
+    it "should return device size bytes for sequential writes" do
+      wl = Rperf::Workload.new(:seq_write, "0 KiB", 
+                               :threads => 1,
+                               :blocksize => "1 KiB"
+                               :loop => 0)
+      bytes = 0
+      while block = wl.next do
+        bytes += block.length
+      end
+    end
+  end
+
 end

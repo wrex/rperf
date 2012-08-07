@@ -2,6 +2,11 @@ require 'rperf'
 
 describe Rperf do
   describe "#normalize_units" do
+
+    it "should leave valid numbers alone" do
+      Rperf::normalize_units(4321).should == 4321
+    end
+
     it "should turn '8 KiB' into 8192" do
       Rperf::normalize_units("8 KiB").should == 8192
     end
@@ -49,8 +54,8 @@ describe Rperf do
       Rperf::normalize_units("1 TiB").should == 1_099_511_627_776
     end
 
-    it "should convert invalid strings to 0" do
-      Rperf::normalize_units("foobizzle").should == 0
+    it "should leave invalid strings alone" do
+      Rperf::normalize_units("foobizzle").should == "foobizzle"
     end
 
   end
