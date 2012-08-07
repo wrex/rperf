@@ -17,7 +17,7 @@ describe Rperf::Workload do
   end
 
   describe "#next_block" do
-    it "should return device size bytes for sequential writes" do
+    it "should return device size bytes for sequential writes with noloop" do
       wl = Rperf::Workload.new(1, 1024, 4096, :seq_write, :loop => false)
       bytes = 0
       while block = wl.next_block do
@@ -26,13 +26,17 @@ describe Rperf::Workload do
       bytes.should == 4096
     end
 
-    it "should return partial last block" do
+    it "should return partial last block with noloop" do
       wl = Rperf::Workload.new(1, 1024, 5000, :seq_write, :loop => false)
-      wl.next_block.length.should == 1024
-      wl.next_block.length.should == 1024
-      wl.next_block.length.should == 1024
-      wl.next_block.length.should == 1024
+      4.times { wl.next_block.length.should == 1024 }
       wl.next_block.length.should == 5000 - 4096
+      wl.next_block.should be nil
+    end
+
+    it "should write continuously with loop" do
+      wl = Rperf::Workload.new(1,1024,5000, :seq_write, :loop => true)
+      5.times { wl.next_block }
+      wl.next_block.should_not be nil
     end
   end
 

@@ -15,11 +15,10 @@ Feature: basic command line invocation
       |FILE_OR_DEVICE|which is required|
 
 
-  Scenario: Default load generation
+  Scenario: Default load generation # One stream of sequential writes
     Given A 1_000_000 byte file named "myfile" in the current directory
-    And I have not created a configuration file
     When I run `rperf myfile`
-    Then I should see continuous IO to all of myfile
+    Then I should exactly fill "myfile" with random data
     
 
 # vim: ai sw=2 tm=75
