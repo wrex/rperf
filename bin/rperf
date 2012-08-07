@@ -7,7 +7,6 @@ require 'rperf'
 class App
   include Methadone::Main
   include Methadone::CLILogging
-  include Methadone::SH
 
   main do |files| # Add args you want: |like,so|
     # your program code here
@@ -24,8 +23,8 @@ class App
 
   version Rperf::VERSION
 
-  on("--[no]-loop", "Loop sequential workloads", "(Default: loop)")
-
+  on("--[no-]loop", "Loop sequential workloads", "(Default: loop)")
+  
   arg :WORKLOAD, :many, <<EOF
 Workload specfications for the I/O to perform. For example, the
         workload specification "myfile = 4-8KiB-b80" will create 4
