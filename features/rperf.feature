@@ -11,7 +11,6 @@ Feature: basic command line invocation
     And the banner should document that this app takes options
     And the following options should be documented:
       |--version|
-      |--workload|
     And the banner should document that this app's arguments are:
       |FILE_OR_DEVICE|which is required|
 
