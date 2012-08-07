@@ -3,7 +3,7 @@ require "rperf/stream"
 require "rperf/workload"
 
 module Rperf
-  def Rperf::de_unitize(str)
+  def Rperf::normalize_units(str)
 
     case str
 
