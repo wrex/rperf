@@ -66,12 +66,12 @@ Workload specfications for the I/O to perform. For example, the
 
         RW_TYPE takes the following form:
 
-        RW_TYPE = (r|w|b|R|W|B)[READ_P] ['@' DEDUPE_P '-' COMP]
+        RW_TYPE = (r|w|b|R|W|B)[READ_P] ['@' DEDUPE_P '-' COMP_P]
         
         READ_P defaults to 50 and specifies the percentage of read I/O
         operations. It is only meaningful for "b" or "B"
 
-        DEDUPE_P and COMP only have meaning for "w" (write) or "b"
+        DEDUPE_P and COMP_P only have meaning for "w" (write) or "b"
         (both) stream types (they are ignored with a stream type of
         "r").
 
@@ -79,9 +79,8 @@ Workload specfications for the I/O to perform. For example, the
         duplicated. The default is zero (each block contains unique
         data).
 
-        COMP indicates the compressibility of each block. The default
-        is 1 which indicates no compressibility. 2 indicates 50%
-        compressible, 4 is approximately ....
+        COMP indicates the compressibility of each block expressed as a
+        percent. The default is non-compressible (0%).
 
         Examples:
 
@@ -90,11 +89,12 @@ Workload specfications for the I/O to perform. For example, the
 
         # Continuously fill /dev/sdb with 50% dedupable, 2x
         # compressible data from 4 threads
-        rperf "/dev/sdb = 4-8KiB-W@50-2"
+        rperf "/dev/sdb = 4-8KiB-W@50-50"
 
         # Peform random I/O to the first 5 GiB of /dev/sdb, with 8 KiB
-        # blocks, 80% read I/O, and writing compressible data
-        rperf "/dev/sdb{0-5GiB} = 8-8KiB-b80@50-2"
+        # blocks, 80% read I/O, and writing 50% dedupable and 50%
+        # compressible data
+        rperf "/dev/sdb{0-5GiB} = 8-8KiB-b80@50-50"
 
         # Continuously perform random reads to /dev/sdb and random
         # writes to /dev/sdc
