@@ -1,7 +1,7 @@
 require 'rperf'
 
 describe Rperf::Workload do
-  it "should require a workload type and path" do
+  it "should require a workload type and device size" do
     expect { Rperf::Workload.new }.to raise_error ArgumentError
     expect { Rperf::Workload.new(:seq_read) }.to raise_error ArgumentError
   end
