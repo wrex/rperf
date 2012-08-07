@@ -65,6 +65,5 @@ module Rperf
       block
     end
 
-
   end
 end

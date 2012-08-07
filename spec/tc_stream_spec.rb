@@ -22,6 +22,34 @@ describe Rperf::Stream do
       block1 = stream.block
       stream.block.should_not == block1
     end
+
+    it "make_block should return 7 bytes zeroed with compression=90" do
+      # Assuming 64bit machine!!
+      str = Rperf::Stream.new(8)
+      str.compression = 90
+      b = str.block
+      b[0..6].should == "\x00" * 7
+      b[7].should_not == "\x00"
+    end
+
+    it "make_block should return 4 bytes zeroed with compression=50" do
+      # Assuming 64bit machine!!
+      str = Rperf::Stream.new(8)
+      str.compression = 50
+      b = str.block
+      b[0..3].should == "\x00" * 4
+      b[4].should_not == "\x00"
+    end
+
+    it "make_block should return 1 bytes zeroed with compression=20" do
+      # Assuming 64bit machine!!
+      str = Rperf::Stream.new(8)
+      str.compression = 20
+      b = str.block
+      b[0].should == "\x00"
+      b[1].should_not == "\x00"
+    end
+
   end
 
   describe "#dedupe" do
@@ -86,8 +114,7 @@ describe Rperf::Stream do
       block = str2.block
       compressed = Zlib::deflate(block)
 
-      compressed.length.should be >= str2.blocksize / 2 * 0.9
-      compressed.length.should be <= str2.blocksize / 2 * 1.1
+      compressed.length.should be == 5205 # not exactly 50% of 8192, but close enough
     end
 
   end
