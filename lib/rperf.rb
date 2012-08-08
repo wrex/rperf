@@ -3,6 +3,15 @@ require "rperf/stream"
 require "rperf/workload"
 
 module Rperf
+  class Seq_write
+    attr_reader :pathname
+    def initialize(pathname)
+      @pathname = pathname
+
+      raise ArgumentError, "File doesn't exist! (#{pathname})" unless File.exist?(pathname)
+    end
+  end
+
   def Rperf::normalize_units(val)
 
     case val
