@@ -15,10 +15,10 @@ Feature: basic command line invocation
       |FILE_OR_DEVICE|which is required|
 
 
-  Scenario: Default load generation # One stream of sequential writes
-    Given A 1_000_000 byte file named "myfile" in the current directory
+  Scenario: Default load generation (one stream of sequential writes)
+    Given A 1_000_000 byte file named "tmp/datafile" in the current directory
     When I run `rperf myfile`
-    Then I should exactly fill "myfile" with random data
+    Then Each 8_192 byte block of "tmp/datafile" should be unique
     
 
 # vim: ai sw=2 tm=75
