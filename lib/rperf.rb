@@ -4,11 +4,25 @@ require "rperf/workload"
 
 module Rperf
   class Seq_write
-    attr_reader :pathname
-    def initialize(pathname)
-      @pathname = pathname
+    def initialize(pathname, blocksize)
 
       raise ArgumentError, "File doesn't exist! (#{pathname})" unless File.exist?(pathname)
+
+      device_size = File.size(pathname)
+
+      stream = Rperf::Stream.new(blocksize)
+
+      f = File.open(pathname, "w")
+      written = 0
+      while written < device_size do
+        if device_size - written >= blocksize
+          f.syswrite(stream.block)
+        else
+          n = device_size - written - 1
+          f.syswrite(stream.block[0..n])
+        end
+        written += blocksize
+      end
     end
   end
 

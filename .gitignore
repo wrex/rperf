@@ -4,3 +4,4 @@ pkg
 html
 *.swp
 *.lock
+tmp
