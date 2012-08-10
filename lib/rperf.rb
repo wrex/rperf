@@ -4,7 +4,7 @@ require "rperf/workload"
 
 module Rperf
   class Seq_write
-    def initialize(pathname, blocksize)
+    def initialize(pathname, blocksize=8192)
 
       raise ArgumentError, "File doesn't exist! (#{pathname})" unless File.exist?(pathname)
 

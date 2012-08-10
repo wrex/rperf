@@ -16,8 +16,8 @@ Feature: basic command line invocation
 
 
   Scenario: Default load generation (one stream of sequential writes)
-    Given A 1_000_000 byte file named "tmp/datafile" in the current directory
-    When I run `rperf myfile`
+    Given A 81_920 byte file named "tmp/datafile" in the current directory
+    When I successfully run `rperf datafile`
     Then Each 8_192 byte block of "tmp/datafile" should be unique
     
 

@@ -20,7 +20,7 @@ module Rperf
         # return a unique block
         @last_block = make_block
       else
-        # dupe'ing -- return the previous block
+         # dupe'ing -- return the previous block
         @last_block
       end
     end

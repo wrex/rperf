@@ -8,13 +8,12 @@ class App
   include Methadone::Main
   include Methadone::CLILogging
 
-  main do |files| # Add args you want: |like,so|
-    # your program code here
-    # You can access CLI options via
-    # the options Hash
+  main do |workload|
+    puts "in main"
+    Rperf::Seq_write.new(workload)
   end
 
-  description "rperf -- ruby IO performance testing utility"
+  description "ruby IO performance testing utility"
 
   on("--help", "Display help") do 
     puts opts.to_s
