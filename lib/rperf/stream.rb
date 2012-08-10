@@ -16,7 +16,7 @@ module Rperf
     end
 
     def block
-      if (100 - @dedupe) > (1 + @random.rand(100))
+      if (100 - @dedupe) >= (1 + @random.rand(100))
         # return a unique block
         @last_block = make_block
       else
