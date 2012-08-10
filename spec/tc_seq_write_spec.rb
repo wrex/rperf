@@ -12,41 +12,50 @@ describe Rperf::Seq_write do
     expect { Rperf::Seq_write.new("tmp/datafile", 1024) }.to raise_error ArgumentError
   end
 
-  it "should completely fill file with random data" do
-    # Create a sparse file exactly 102,400 bytes in size
-    f = File.new("tmp/datafile", 'w')
-    f.seek(102399)
+  def create_sparse_file(name,size)
+    f = File.new(name, 'w')
+    f.seek(size - 1)
     f.syswrite "\x00"
     f.close
+  end
 
-    # Now fill it
-    Rperf::Seq_write.new("tmp/datafile", 1024)
+  def get_a_block(fh, blocksize)
+    begin
+      return block = fh.sysread(blocksize)
+    rescue EOFError
+      return false
+    end
+  end
 
-    # Verify it is still exactly 10,240 bytes in size
-    File.size("tmp/datafile").should == 102_400
-
-    # Now verify it contains 100 unique 1KiB blocks
+  def verify_unique_contents(name, blocksize)
     sha1 = Digest::SHA1.new
-    File.open("tmp/datafile", "r") do |f|
+    bytes_read = 0
+    File.open(name, "r") do |f|
       seen = []
-      100.times do
-        hash = sha1.hexdigest f.sysread(1024)
+      while block = get_a_block(f, blocksize) do
+        bytes_read += block.length
+        hash = sha1.hexdigest block
         seen.should_not include(hash)
         seen << hash
       end
     end
+    return bytes_read
+  end
+
+  it "should completely fill a file with random data" do
+    filesize = 100_000
+    blocksize = 1_024
+    create_sparse_file("tmp/datafile", filesize)
+    Rperf::Seq_write.new("tmp/datafile", blocksize)
+    File.size("tmp/datafile").should == filesize
+    verify_unique_contents("tmp/datafile", blocksize).should == filesize
   end
 
   it "should exactly fill a file with size not a multiple of blocksize" do
-    # Create a sparse file exactly 1000 bytes in size
-    f = File.new("tmp/datafile", 'w')
-    f.seek(999)
-    f.syswrite "\x00"
-    f.close
-
-    # Now fill it with a 64 byte block size
-    Rperf::Seq_write.new("tmp/datafile", 64)
-
-    File.size("tmp/datafile").should == 1_000
+    filesize = 1_000
+    blocksize = 64
+    create_sparse_file("tmp/datafile", filesize)
+    Rperf::Seq_write.new("tmp/datafile", blocksize)
+    File.size("tmp/datafile").should == filesize
   end
 end
