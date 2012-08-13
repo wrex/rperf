@@ -4,8 +4,8 @@ module Rperf
     attr_reader :dedupe
     attr_reader :compression
 
-    # Note that 0.size returns the number of bytes in the FixNum representation of 0
-    WORD_SIZE = 0.size
+    # Number of bytes in a FIXNUM
+    WORDSIZE = 0.size
 
     def initialize(bs=8192)
       self.blocksize = bs
@@ -41,8 +41,8 @@ module Rperf
   private
 
     def blocksize=(blocksize)
-      raise ArgumentError, "Invalid blocksize (must be a multiple of #{WORD_SIZE})" unless
-          blocksize % 0.size == 0
+      raise ArgumentError, "Invalid blocksize (must be a multiple of #{WORDSIZE})" unless
+          blocksize % WORDSIZE == 0
 
       @blocksize = blocksize
     end
@@ -50,12 +50,12 @@ module Rperf
     def make_block
       # compression contains percentage of bytes in block to zero
       # calculate n as the number of bytes in a word to zero
-      n = (WORD_SIZE * compression.to_f / 100).to_i
+      n = (WORDSIZE * compression.to_f / 100).to_i
       zeroes = "\x00" * n
 
       block = ""
-      (blocksize / WORD_SIZE).times do
-        next_word = @random.bytes(WORD_SIZE)
+      (blocksize / WORDSIZE).times do
+        next_word = @random.bytes(WORDSIZE)
         if compression > 0
           next_word[0..n-1] = zeroes
         end
