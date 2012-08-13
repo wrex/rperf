@@ -102,15 +102,16 @@ describe Rperf::BlockGenerator do
     end
 
     it "block should return the same block approximately dedupe percent of the time" do
-      generator.dedupe = 75
+      percent = generator.dedupe = 81
       dupes = prevblock = 0
-      100.times do
+      1000.times do
         newblock = generator.block
         dupes += 1 if newblock == prevblock
         prevblock = newblock
       end
-      dupes.should be >= (generator.dedupe * 0.9).to_i
-      dupes.should be <= (generator.dedupe * 1.1).to_i
+
+      # Give a fudge factor of +/- 5%
+      (percent * 0.95 .. percent * 1.05).should include(dupes / 10.0)
     end
   end
 
@@ -142,10 +143,13 @@ describe Rperf::BlockGenerator do
     it "should create ~2x compressible blocks with compression=50" do
       gen2 = Rperf::BlockGenerator.new 
       gen2.compression = 50
-      block = gen2.block
-      compressed = Zlib::deflate(block)
+      uncompressed = gen2.block
+      #10.times { uncompressed += gen2.block }
+      compressed = Zlib::deflate(uncompressed)
 
-      compressed.length.should be == (WORDSIZE == 8 ? 5205 : 5614) # not exactly 50% of 8192, but close enough
+      target = uncompressed.length / 2
+      # check if within +/- 30% of target
+      (target * 0.7 .. target * 1.3).should include(compressed.length)
     end
 
   end
