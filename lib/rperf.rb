@@ -1,5 +1,5 @@
 require "rperf/version"
-require "rperf/stream"
+require "rperf/block_generator"
 require "rperf/workload"
 
 module Rperf
