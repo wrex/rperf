@@ -1,5 +1,5 @@
 module Rperf
-  class Stream
+  class BlockGenerator
     attr_reader :blocksize
     attr_reader :dedupe
     attr_reader :compression

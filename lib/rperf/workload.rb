@@ -5,7 +5,7 @@ module Rperf
       raise ArgumentError, "Invalid workload type" unless
                [:seq_read, :seq_write, :rand_read, :rand_write, :rand_both].include?(type) 
 
-      @stream = Rperf::Stream.new(blocksize)
+      @stream = Rperf::BlockGenerator.new(blocksize)
       @returned_bytes = 0
       @device_size = device_size
 

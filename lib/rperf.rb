@@ -10,7 +10,7 @@ module Rperf
 
       device_size = File.size(pathname)
 
-      stream = Rperf::Stream.new(blocksize)
+      stream = Rperf::BlockGenerator.new(blocksize)
 
       f = File.open(pathname, "w")
       written = 0
