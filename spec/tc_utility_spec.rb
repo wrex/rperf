@@ -1,7 +1,7 @@
 require 'rperf'
 
 describe Rperf do
-  describe "#normalize_units" do
+  describe "normalize_units" do
 
     it "should leave valid numbers alone" do
       Rperf::normalize_units(4321).should == 4321

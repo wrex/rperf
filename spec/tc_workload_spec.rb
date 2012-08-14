@@ -26,6 +26,7 @@ describe Rperf::Workload do
       bytes.should == 4096
     end
 
+    # Yuck! No, no, no -- only do full blocks!
     it "should return partial last block with noloop" do
       wl = Rperf::Workload.new(1, 1024, 5000, :seq_write, :loop => false)
       4.times { wl.next_block.length.should == 1024 }
