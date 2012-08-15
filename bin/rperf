@@ -8,9 +8,9 @@ class App
   include Methadone::Main
   include Methadone::CLILogging
 
-  main do |workload|
+  main do |pathname|
     puts "in main"
-    Rperf::Seq_write.new(workload)
+    Rperf::Worker.new(Rperf::Device.new(pathname, 32768)).run!
   end
 
   description "ruby IO performance testing utility"
