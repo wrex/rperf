@@ -1,0 +1,2 @@
+default: --format profile features
+html_report: --format pretty --format html --out=features_report.html features
