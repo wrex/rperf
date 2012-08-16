@@ -8,7 +8,7 @@ module Rperf
     WORDSIZE = 0.size
 
     def initialize(bs=8192)
-      self.blocksize = bs
+      self.blocksize = Rperf::normalize_units(bs)
       @random = Random.new(22069)
       @dedupe = 0 # no dedupe by default
       @compression = 0 # not compressible by default

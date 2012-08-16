@@ -11,7 +11,7 @@ module Rperf
 
     def initialize(device, blocksize=8192, type = :write,
                   order = :sequential, one_pass = true)
-      @blocksize = blocksize
+      @blocksize = Rperf::normalize_units(blocksize)
       @device = device
       @generator = BlockGenerator.new(blocksize)
       @type = type

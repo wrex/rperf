@@ -1,18 +1,6 @@
 require 'rperf'
 require 'digest'
 
-# Device
-#       @size (in bytes)
-#       @file (File object)
-#       @workers (could be reader, writer, or readwriter)
-#
-# Worker
-#       @blocksize
-#       @device
-#       @device_range
-#       @type (read, write, or both)
-#       @offset_selector (sequential, random, or sequential_loop)
-#       @block_generator
 def get_a_block(fh, blocksize)
   begin
     return block = fh.sysread(blocksize)
@@ -42,7 +30,7 @@ describe Rperf::Worker do
     expect { Rperf::Worker.new() }.to raise_error ArgumentError
   end
 
-  let(:device) { Rperf::Device.new("tmp/datafile", 32768) }
+  let(:device) { Rperf::Device.new("tmp/datafile", "32 KiB") }
 
   let(:worker) { Rperf::Worker.new(device) }
 

@@ -6,7 +6,7 @@ module Rperf
 
     def initialize(pathname, size)
       @pathname = pathname
-      @size = size
+      @size = Rperf::normalize_units(size)
       @file = File.open(pathname, "w+")
       # TODO: verify device is at least as big as size
     end
