@@ -35,7 +35,7 @@ describe Rperf::Worker do
   let(:worker) { Rperf::Worker.new(device) }
 
   it "should default to 8KiB blocksize" do
-    worker.generator.blocksize.should == 8192
+    worker.blocksize.should == 8192
   end
 
   it "should default to non-looping" do

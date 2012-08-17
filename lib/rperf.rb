@@ -4,7 +4,7 @@ require "rperf/device"
 require "rperf/worker"
 
 module Rperf
-  def normalize_units(val)
+  def self.normalize_units(val)
 
     case val
 
@@ -40,6 +40,4 @@ module Rperf
 
     end
   end
-  
-  module_function :normalize_units
 end
