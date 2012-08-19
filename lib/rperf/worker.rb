@@ -1,45 +1,47 @@
 module Rperf
   class Worker
-    attr_reader :blocksize
-    attr_reader :device
-    attr_reader :generator
-    attr_reader :type
-    attr_reader :order
-    attr_reader :bytes_written
 
-    attr_accessor :one_pass
-
-    def initialize(device, blocksize=8192, type = :write,
-                  order = :sequential, one_pass = true)
-      @blocksize = Rperf::normalize_units(blocksize)
-      @device = device
-      @generator = BlockGenerator.new(blocksize)
-      @type = type
-      @order = order
-      @one_pass = one_pass
-      @bytes_written = 0
+    def initialize(workload)
+      @workload = workload
+      @generator = BlockGenerator.new(@workload.blocksize)
     end
 
-    def loop? 
-      not @one_pass
+    def device
+      @workload.device
+    end
+
+    def stats
+      @workload.device.stats
+    end
+
+    def size
+      @workload.size
+    end
+
+    def blocksize
+      @workload.blocksize
+    end
+
+    def file
+      @workload.device.file
     end
 
     def run!
-      while @bytes_written < device.size do 
+      while device.stats.bytes_written < size do 
         step!
       end
     end
 
     def step!
-      if @bytes_written + blocksize <= device.size
+      if stats.bytes_written + blocksize <= size
+        file.syswrite(@generator.block)
+        stats.bytes_written += blocksize
+      elsif @workload.loop
+        device.file.seek(@workload.start_offset)
         device.file.syswrite(generator.block)
-        @bytes_written += blocksize
-      elsif @one_pass
-        raise EOFError
+        stats.bytes_written += blocksize
       else
-        device.file.seek(0)
-        device.file.syswrite(generator.block)
-        @bytes_written += blocksize
+        raise EOFError
       end
     end
   end

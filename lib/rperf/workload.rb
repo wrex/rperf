@@ -6,6 +6,7 @@ module Rperf
     attr_reader :start_offset
     attr_reader :end_offset
     attr_reader :threads
+    attr_reader :workers
 
     attr_accessor :device
     attr_accessor :type
@@ -16,10 +17,10 @@ module Rperf
       @pathname = pathname
 
       if end_offset 
-        start_offset = size_or_start
+        start_offset = Rperf.normalize_units(size_or_start)
       else
         start_offset = 0
-        end_offset = size_or_start
+        end_offset = Rperf.normalize_units(size_or_start)
       end
 
       # default values
@@ -31,6 +32,7 @@ module Rperf
       @order = :sequential
       @loop = false
       @threads = 1
+      @workers = [ Rperf::Worker.new(self) ]
 
       @device = Rperf::Device.new(@pathname)
     end

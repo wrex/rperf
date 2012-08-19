@@ -73,22 +73,39 @@ describe Rperf::Workload do
     end
   end
 
-  describe "#threads" do ||
-    it "should default to a single thread" do ||
+  describe "#threads" do
+    it "should default to a single thread" do
       workload.threads.should == 1
+    end
+
+    it "should create a worker for each thread" do
+      workload.threads.times do |i|
+        workload.workers[i-1].class.should == Rperf::Worker
+      end
     end
   end
 
-  xit "should write one block when step is called" do
-    workload.stats.bytes_written.should == 0
-    workload.step!
-    workload.stats.bytes_written.should == 8192
+  it "should start with bytes_written == 0" do
+    workload.device.stats.bytes_written.should == 0
   end
 
-  xit "should by fill a file with random data when run is called" do
+  it "should write one block when step is called" do
+    workload.workers[0].step!
+    workload.device.stats.bytes_written.should == 8192
+  end
+
+  it "should by fill a file with random data when run is called" do
     workload.device.file.size.should == 0
-    workload.run!
-    verify_unique_contents("tmp/datafile", 8192).should == 32768
+
+    workload.workers[0].run!
+
+    sha1 = Digest::SHA1.new
+    seen = []
+    File.open("tmp/datafile", "r") do |f|
+      hash = sha1.hexdigest(f.sysread(workload.blocksize))
+      seen.should_not include(hash)
+      seen << hash
+    end
     workload.device.file.size.should == 32768
   end
 

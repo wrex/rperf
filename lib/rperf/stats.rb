@@ -1,6 +1,6 @@
 module Rperf
   class DeviceStats
-    attr_reader :bytes_written
+    attr_accessor :bytes_written
 
     def initialize
       @bytes_written = 0
