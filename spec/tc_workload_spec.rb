@@ -109,6 +109,15 @@ describe Rperf::Workload do
     workload.device.file.size.should == 32768
   end
 
+  it "should create one worker for each thread" do
+    workload.threads = 4
+    workload.workers.size.should == 4
+  end
+
+  it "should fill a file with random data with multiple workers" do
+    pending "Gotta figure out how to parcel up the work"
+  end
+
   xit "should only let step be called four times on 32K file"  do 
     4.times { workload.step! }
     expect { workload.step! }.to raise_error EOFError

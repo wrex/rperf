@@ -3,11 +3,11 @@ module Rperf
   class Workload
     attr_reader :file
     attr_reader :blocksize
-    attr_reader :start_offset
     attr_reader :end_offset
-    attr_reader :threads
     attr_reader :workers
 
+    attr_accessor :start_offset
+    attr_accessor :threads
     attr_accessor :device
     attr_accessor :type
     attr_accessor :order
@@ -31,8 +31,8 @@ module Rperf
       @type = :write
       @order = :sequential
       @loop = false
-      @threads = 1
       @workers = [ Rperf::Worker.new(self) ]
+      @threads = 1
 
       @device = Rperf::Device.new(@pathname)
     end
@@ -48,6 +48,12 @@ module Rperf
 
     def size
       @end_offset ? @end_offset - @start_offset : nil
+    end
+
+    def threads=(n)
+      @threads = n
+      @workers = []
+      n.times { @workers << Rperf::Worker.new(self) }
     end
   end
 end
