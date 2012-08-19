@@ -12,13 +12,23 @@ Feature: basic command line invocation
     And the following options should be documented:
       |--version|
     And the banner should document that this app's arguments are:
-      |FILE_OR_DEVICE|which is required|
+      |COMMANDS|which is required|
 
 
-  Scenario: Default load generation (one stream of sequential writes)
-    Given A 81_920 byte file named "tmp/datafile" in the current directory
-    When I successfully run `rperf datafile`
-    Then Each 8_192 byte block of "tmp/datafile" should be unique
+  Scenario: Simple sequential write
+    Given a file named "my_test" with:
+      """
+      datafile = Device.new("tmp/datafile", "32 KiB")
+
+      w1 = Workload.new("Sequential fill") do |w|
+        w.device = datafile, 0, "16 KiB" # IO to first 16 KiB in device
+        w.blocksize = "8 KiB"
+        w.sequential_write
+      end
+
+      w1.run!
+      """
+    When I run `rperf my_test`
+    Then each 8_192 byte block of "tmp/datafile" should be unique
     
-
 # vim: ai sw=2 tm=75

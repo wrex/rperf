@@ -1,14 +1,14 @@
 module Rperf
   class Device
     attr_reader :pathname
-    attr_reader :size
     attr_reader :file
 
-    def initialize(pathname, size)
+    attr_accessor :stats
+
+    def initialize(pathname)
       @pathname = pathname
-      @size = Rperf::normalize_units(size)
       @file = File.open(pathname, "w+")
-      # TODO: verify device is at least as big as size
+      @stats = Rperf::DeviceStats.new
     end
   end
 end

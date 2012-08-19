@@ -5,8 +5,7 @@ describe Rperf::Device do
     expect { Rperf::Device.new }.to raise_error ArgumentError
   end
 
-  it "should also require a size" do
-    expect {Rperf::Device.new("tmp/datafile")}.to raise_error ArgumentError
+  it "should open a file" do
+    Rperf::Device.new("tmp/datafile").file.class.should == File
   end
-
 end

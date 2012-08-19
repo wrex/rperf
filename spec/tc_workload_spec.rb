@@ -1,0 +1,112 @@
+require 'rperf'
+require 'digest'
+require 'fileutils'
+
+describe Rperf::Workload do
+
+  it "should require a device" do
+    expect { Rperf::Workload.new() }.to raise_error ArgumentError
+  end
+
+  it "should require a device and size" do ||
+    FileUtils.touch("tmp/datafile")
+    expect { Rperf::Workload.new("tmp/datafile") }.to raise_error ArgumentError
+    expect { Rperf::Workload.new("tmp/datafile", "32 KiB") }.not_to raise_error
+  end
+
+  it "should not let you specify a bogus device" do
+    expect { Rperf::Workload.new("/bogusdevice", "32 KiB") }.to raise_error
+  end
+
+  it "should let you specify device, start, and end" do ||
+    FileUtils.touch("tmp/datafile")
+    expect { Rperf::Workload.new("tmp/datafile", 8192, 32768) }.not_to raise_error
+  end
+
+  let(:workload) { Rperf::Workload.new("tmp/datafile", "32 KiB") }
+
+  it "should default to 8KiB blocksize" do
+    workload.blocksize.should == 8192
+  end
+
+  it "should default to write" do
+    workload.type.should == :write
+  end
+
+  it "should default to sequential ordering" do
+    workload.order.should == :sequential
+  end
+
+  it "should default to non-looping" do
+    workload.loop.should be false
+  end
+
+  describe "device IO offsets/range" do
+
+    it "start_offset should default to zero" do
+      workload.start_offset.should == 0
+    end
+
+    it "should allow you to specify the start/end offsets" do
+      expect { workload.start_offset = 512 }.not_to raise_error
+      expect { workload.end_offset = 10512 }.not_to raise_error
+    end
+
+    it "should correctly calculate the IO size" do |variable|
+      workload.start_offset = 512
+      workload.end_offset = 10512
+      workload.size.should == 10000
+    end
+
+    it "should allow you to use units for offsets" do |variable|
+      workload.start_offset = "8 KiB"
+      workload.start_offset.should == 8192
+      workload.end_offset = "32 KiB"
+      workload.end_offset.should == 32768
+    end
+
+  end
+
+  describe "#stats" do
+    it "should return an Rperf::Stats object" do
+      workload.device.stats.class.should == Rperf::DeviceStats
+    end
+  end
+
+  describe "#threads" do ||
+    it "should default to a single thread" do ||
+      workload.threads.should == 1
+    end
+  end
+
+  xit "should write one block when step is called" do
+    workload.stats.bytes_written.should == 0
+    workload.step!
+    workload.stats.bytes_written.should == 8192
+  end
+
+  xit "should by fill a file with random data when run is called" do
+    workload.device.file.size.should == 0
+    workload.run!
+    verify_unique_contents("tmp/datafile", 8192).should == 32768
+    workload.device.file.size.should == 32768
+  end
+
+  xit "should only let step be called four times on 32K file"  do 
+    4.times { workload.step! }
+    expect { workload.step! }.to raise_error EOFError
+  end
+
+  xit "should allow writing more than file length if looping" do 
+    workload.one_pass = false
+    4.times { workload.step! }
+    expect { workload.step! }.not_to raise_error
+    workload.bytes_written.should == 32768 + 8192
+  end
+    
+  xit "should write blocks in random order when type is write and selector is random"
+  xit "should loop sequentially when told to"
+  xit "should only do io to the specified range"
+
+end
+
