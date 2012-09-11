@@ -20,7 +20,7 @@ describe "#block" do
 
   its("block.length") { should eq(16) }
 
-  it "should return different results on each call" do
+  it "should return unique blocks" do
     sha1 = Digest::SHA1.new
     seen = []
 
@@ -93,7 +93,7 @@ describe "#dedupe" do
     expect { generator.dedupe = -1 }.to raise_error
   end
 
-  it "block should return the same block approximately dedupe percent of the time" do
+  it "should return the same block approximately dedupe percent of the time" do
     percent = generator.dedupe = 81
     dupes = prevblock = 0
     1000.times do
