@@ -24,11 +24,8 @@ describe "#block" do
     sha1 = Digest::SHA1.new
     seen = []
 
-    100.times do
-      hash = sha1.hexdigest(generator.block)
-      expect(seen).to_not include(hash)
-      seen << hash
-    end
+    100.times { seen << sha1.hexdigest(generator.block) }
+    expect(seen.uniq.length).to eq(seen.length)
   end
 end
 
@@ -43,34 +40,36 @@ describe "compression of a word-sized block" do
   when 4
     it "should return 3 of 4 bytes zeroed with compression=75" do
       gen.compression = 75
-      expect(gen.block).to match(/^\x00\x00\x00[^\x00]$/)
+      expect(gen.block).to match(/^\x00{3}[^\x00]$/)
     end
 
     it "should return 2 of 4 bytes zeroed with compression=50" do
       gen.compression = 50
-      expect(gen.block).to match(/^\x00^\x00[^\x00][^\x00]$/)
+      expect(gen.block).to match(/^\x00{2}[^\x00]{2}$/)
     end
 
     it "should return 1 of 4 bytes zeroed with compression=25" do
       gen.compression = 25
-      expect(gen.block).to match(/^\x00[^\x00][^\x00][^\x00]$/)
+      expect(gen.block).to match(/^\x00[^\x00]{3}$/)
     end
 
   when 8
     it "should return 7 of 8 bytes zeroed with compression=90" do
       gen.compression = 90
-      expect(gen.block).to match(/^\x00\x00\x00\x00\x00\x00\x00[^\x00]$/)
+      expect(gen.block).to match(/^\x00{7}[^\x00]$/)
     end
 
     it "should return 4 of 8 bytes zeroed with compression=50" do
       gen.compression = 50
-      expect(gen.block).to match(/^\x00\x00\x00\x00[^\x00][^\x00][^\x00][^\x00]$/)
+      expect(gen.block).to match(/^\x00{4}[^\x00]{4}/)
     end
 
     it "should return 1 of 8 bytes zeroed with compression=20" do
       gen.compression = 20
-      expect(gen.block).to match(/^\x00[^\x00][^\x00][^\x00][^\x00][^\x00][^\x00][^\x00]$/)
+      expect(gen.block).to match(/^\x00[^\x00]{7}/)
     end
+  else
+    raise "Unexpected number of bytes in a FIXNUM!"
   end
 end
 
@@ -108,41 +107,41 @@ describe "#dedupe" do
 end
 
 describe "#compression" do
-  let(:generator) { Rperf::BlockGenerator.new(16) }
+  let(:generator) { Rperf::BlockGenerator.new }
+  subject(:fullblock) { generator.block }
 
-  it "should have a default compression factor of 0" do
-    generator.compression.should == 0
-  end
+  context "default" do
+    it "has compression level of 0" do
+      expect(generator.compression).to eq(0)
+    end
 
-  it "should by default make each word in a block unique" do
-    fullblock = Rperf::BlockGenerator.new.block
+    it "should make each word in a block unique" do
+      # split block into an array of words
+      # e.g. on 32-bit, "01234567" -> ["0123", "4567"]
+      words = fullblock.scan(/.{#{FIXNUM_BYTES}}/)
 
-    # split block into an array of words
-    # e.g. on 32-bit, "01234567" -> ["0123", "4567"]
-    words = fullblock.scan(/.{#{FIXNUM_BYTES}}/)
+      expect(words.uniq.length).to eq(words.length)
+    end
 
-    while word = words.shift do
-      words.should_not include(word)
+    it "should create uncompressible blocks" do
+      compressed = Zlib::deflate(fullblock)
+
+      # note that compressing random data may increase size!
+      expect(compressed.length).to be >= fullblock.length
     end
   end
 
-  it "should create uncompressible blocks by default" do
-    block = Rperf::BlockGenerator.new.block
-    compressed = Zlib::deflate(block)
 
-    # note that compressing random data may increase size!
-    compressed.length.should be >= block.length
-  end
 
-  it "should create ~2x compressible blocks with compression=50" do
-    gen2 = Rperf::BlockGenerator.new 
-    gen2.compression = 50
-    uncompressed = gen2.block
-    #10.times { uncompressed += gen2.block }
-    compressed = Zlib::deflate(uncompressed)
+  context "with compresion=50" do
+    it "should create ~2x compressible blocks" do
+      generator.compression = 50
+      uncompressed = generator.block
+      compressed = Zlib::deflate(uncompressed)
 
-    target = uncompressed.length / 2
-    # check if within +/- 30% of target
-    (target * 0.7 .. target * 1.3).should include(compressed.length)
+      target = uncompressed.length / 2
+      # check if within +/- 30% of target
+      (target * 0.7 .. target * 1.3).should include(compressed.length)
+    end
   end
 end
