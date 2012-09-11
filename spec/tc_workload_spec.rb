@@ -14,7 +14,7 @@ describe Rperf::Workload do
     expect { Rperf::Workload.new("tmp/datafile", "32 KiB") }.not_to raise_error
   end
 
-  it "should not let you specify a bogus device" do
+  xit "should not let you specify a bogus device" do
     expect { Rperf::Workload.new("/bogusdevice", "32 KiB") }.to raise_error
   end
 
