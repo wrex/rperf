@@ -32,9 +32,11 @@ describe "#block" do
   end
 end
 
-describe "compressed blocks" do
+describe "compression of a word-sized block" do
 
   subject(:gen) { Rperf::BlockGenerator.new(FIXNUM_BYTES) }
+
+  its("block.length") { should eq(FIXNUM_BYTES) }
 
   case FIXNUM_BYTES
 
