@@ -1,6 +1,8 @@
 module Rperf
-  
   class Workload
+  end
+
+  class SequentialWriter < Workload
     attr_reader :file
     attr_reader :blocksize
     attr_reader :end_offset

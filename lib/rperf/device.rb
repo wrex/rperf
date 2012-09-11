@@ -7,6 +7,7 @@ module Rperf
 
     def initialize(pathname)
       @pathname = pathname
+      raise unless File.exists?(pathname)
       @file = File.open(pathname, "w+")
       @stats = Rperf::DeviceStats.new
     end
