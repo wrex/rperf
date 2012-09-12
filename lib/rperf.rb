@@ -1,9 +1,7 @@
 require "rperf/version"
 require "rperf/block_generator"
 require "rperf/device"
-require "rperf/worker"
 require "rperf/sequential_writer"
-require "rperf/stats"
 
 module Rperf
   def self.normalize_units(val)

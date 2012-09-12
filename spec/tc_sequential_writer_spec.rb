@@ -25,7 +25,10 @@ describe Rperf::SequentialWriter do
   end
 
   it "should let you specify device, start offset, and device offset" do
-    expect { Rperf::SequentialWriter.new(DATAFILE, 8192, 32768) }.not_to raise_error
+    expect { @writer = Rperf::SequentialWriter.new(DATAFILE, 8192, 32768) }.not_to raise_error
+    expect(@writer.size).to eq(32768 - 8192)
+    expect(@writer.start_offset).to eq(8192)
+    expect(@writer.end_offset).to eq(32768)
   end
 
   it "should also let you specify just the device and size" do
@@ -34,80 +37,42 @@ describe Rperf::SequentialWriter do
     expect(@writer.start_offset).to eq(0)
     expect(@writer.end_offset).to eq(32768)
   end
+
   it "should not create a file" do
     expect { Rperf::SequentialWriter.new(NOSUCHFILE, "8KiB", "32KiB") }.to raise_error
   end
 
-  let(:workload) { Rperf::SequentialWriter.new("tmp/datafile", "32 KiB") }
+end
 
-  xit "should default to 8KiB blocksize" do
-    workload.blocksize.should == 8192
-  end
+describe "Writing to a 32KiB range" do
 
-  xit "should default to write" do
-    workload.type.should == :write
-  end
+  before(:each) { FileUtils.touch DATAFILE }
+  after(:each) { FileUtils.rm DATAFILE, :force => true }
 
-  xit "should default to sequential ordering" do
-    workload.order.should == :sequential
-  end
+  subject(:writer) { Rperf::SequentialWriter.new(DATAFILE, "32 KiB") }
 
-  xit "should default to non-looping" do
-    workload.loop.should be false
-  end
+  context "default" do
+    its(:blocksize) { should eq(8192) }
+    it { should_not be_loop }
+    its('device.bytes_written') { should eq(0) }
+    its('device.bytes_read') { should eq(0) }
 
-  describe "device IO offsets/range" do
+    it "should write one block when step is called" do
+      writer.step!
+      expect(writer.device.bytes_written).to eq(8192)
 
-    xit "start_offset should default to zero" do
-      workload.start_offset.should == 0
-    end
-
-    xit "should allow you to specify the start/end offsets" do
-      expect { workload.start_offset = 512 }.not_to raise_error
-      expect { workload.end_offset = 10512 }.not_to raise_error
-    end
-
-    xit "should correctly calculate the IO size" do |variable|
-      workload.start_offset = 512
-      workload.end_offset = 10512
-      workload.size.should == 10000
-    end
-
-    xit "should allow you to use units for offsets" do |variable|
-      workload.start_offset = "8 KiB"
-      workload.start_offset.should == 8192
-      workload.end_offset = "32 KiB"
-      workload.end_offset.should == 32768
-    end
-
-  end
-
-  describe "#stats" do
-    xit "should return an Rperf::Stats object" do
-      workload.device.stats.class.should == Rperf::DeviceStats
+      # TODO: need expectation to verify a block was actually written
+      # to the DATAFILE
     end
   end
 
-  describe "#threads" do
-    xit "should default to a single thread" do
-      workload.threads.should == 1
-    end
+  context "looping specified" do
+    before(:each) { writer.loop!}
 
-    xit "should create a worker for each thread" do
-      workload.threads.times do |i|
-        workload.workers[i-1].class.should == Rperf::Worker
-      end
-    end
+    it { should be_loop }
   end
 
-  xit "should start with bytes_written == 0" do
-    workload.device.stats.bytes_written.should == 0
-  end
 
-  xit "should write one block when step is called" do
-    workload.workers[0].step!
-    workload.device.stats.bytes_written.should == 8192
-  end
 
   xit "should by fill a file with random data when run is called" do
     workload.device.file.size.should == 0

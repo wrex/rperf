@@ -1,19 +1,11 @@
 module Rperf
-  class Workload
-  end
-
-  class SequentialWriter < Workload
+  class WorkerThread
     attr_reader :file
     attr_reader :blocksize
     attr_reader :end_offset
-    attr_reader :workers
 
     attr_accessor :start_offset
-    attr_accessor :threads
     attr_accessor :device
-    attr_accessor :type
-    attr_accessor :order
-    attr_accessor :loop
 
     def initialize(pathname, size_or_start, end_offset = nil)
       @pathname = pathname
@@ -25,17 +17,11 @@ module Rperf
         end_offset = Rperf.normalize_units(size_or_start)
       end
 
-      # default values
       @start_offset = start_offset
       @pos = @start_offset
       @end_offset = end_offset
       @blocksize = 8192
-      @type = :write
-      @order = :sequential
       @loop = false
-      @workers = [ Rperf::Worker.new(self) ]
-      @threads = 1
-
       @device = Rperf::Device.new(@pathname)
     end
 
@@ -51,11 +37,27 @@ module Rperf
     def size
       @end_offset ? @end_offset - @start_offset : nil
     end
+  end
 
-    def threads=(n)
-      @threads = n
-      @workers = []
-      n.times { @workers << Rperf::Worker.new(self) }
+  class SequentialWriter < WorkerThread
+    def initialize(pathname, *args)
+      super(pathname, *args)
+    end
+
+    def loop?
+      @loop
+    end
+
+    def loop!
+      @loop = true
+    end
+
+    def no_loop!
+      @loop = false
+    end
+
+    def step!
+      device.bytes_written += blocksize
     end
   end
 end
